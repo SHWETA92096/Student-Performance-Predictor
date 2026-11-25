@@ -1,0 +1,596 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Student Performance Predictor</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    
+<nav class="navbar">
+    <a href="/" class="logo">SP<span></span></a>
+
+    <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="#predict">Predict Marks</a>
+        <a href="#features">Features</a>
+        <a href="#predict" class="nav-cta">Predict Now ↗</a>
+    </div>
+</nav>
+
+
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+
+        <div class="hero-content">
+
+            <span class="hero-tag">STUDENT PERFORMANCE ANALYSIS</span>
+
+            <h1>
+                Unlock Your <span>Academic Potential</span>
+            </h1>
+
+            <p>
+                Discover your academic possibilities with intelligent
+                performance predictions. Understand your progress and
+                take steps towards better results.
+            </p>
+
+            <a href="#predict" class="primary-btn">
+                Predict Your Marks
+            </a>
+
+        </div>
+
+    </section>
+
+
+    <!-- Prediction Section -->
+    <section class="prediction-section" id="predict">
+
+        <div class="section-heading">
+
+            <span class="section-tag">SMART PREDICTION</span>
+
+            <h2>Predict Your Performance</h2>
+
+            <p>
+                Enter your academic information to estimate your final marks.
+            </p>
+
+        </div>
+
+
+        <div class="prediction-container">
+
+            <!-- Prediction Form -->
+            <div class="prediction-card">
+
+                <h3>Student Information</h3>
+
+                <p class="card-description">
+                    Enter the following details accurately.
+                </p>
+
+
+                <!-- Error Message -->
+                {% if error %}
+                <div class="error-message" role="alert">
+                    <span>⚠️</span>
+                    {{ error }}
+                </div>
+                {% endif %}
+
+
+                <form action="{{ url_for('predict') }}" method="POST" id="predictionForm">
+
+                    <div class="form-group">
+
+                        <label for="study_hours">
+                            Daily Study Hours
+                        </label>
+
+                        <input
+                            type="number"
+                            id="study_hours"
+                            name="study_hours"
+                            min="0"
+                            max="24"
+                            step="0.1"
+                            placeholder="Example: 5"
+                            value="{{ study_hours if study_hours is not none else '' }}"
+                            required
+                        >
+
+                        <small>
+                            Enter study hours per day (0–24).
+                        </small>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="attendance">
+                            Attendance Percentage
+                        </label>
+
+                        <input
+                            type="number"
+                            id="attendance"
+                            name="attendance"
+                            min="0"
+                            max="100"
+                            step="0.1"
+                            placeholder="Example: 85"
+                            value="{{ attendance if attendance is not none else '' }}"
+                            required
+                        >
+
+                        <small>
+                            Enter attendance percentage (0–100).
+                        </small>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="previous_marks">
+                            Previous Marks
+                        </label>
+
+                        <input
+                            type="number"
+                            id="previous_marks"
+                            name="previous_marks"
+                            min="0"
+                            max="100"
+                            step="0.1"
+                            placeholder="Example: 75"
+                            value="{{ previous_marks if previous_marks is not none else '' }}"
+                            required
+                        >
+
+                        <small>
+                            Enter previous examination marks (0–100).
+                        </small>
+
+                    </div>
+
+
+                    <div class="form-buttons">
+
+                        <button type="submit" class="primary-btn">
+                            Predict Marks
+                        </button>
+
+                        <button type="button" id="sampleButton" class="secondary-btn">
+                            Use Sample Data
+                        </button>
+
+                        <button type="reset" id="clearButton" class="secondary-btn">
+                            Clear
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+
+            <!-- Information Card -->
+            <div class="information-card">
+
+                <div class="info-icon">📊</div>
+
+                <h3>Why These Details?</h3>
+
+                <div class="info-item">
+
+                    <h4>Study Hours</h4>
+
+                    <p>
+                        Daily study time helps understand learning habits.
+                    </p>
+
+                </div>
+
+
+                <div class="info-item">
+
+                    <h4>Attendance</h4>
+
+                    <p>
+                        Attendance represents classroom participation.
+                    </p>
+
+                </div>
+
+
+                <div class="info-item">
+
+                    <h4>Previous Marks</h4>
+
+                    <p>
+                        Previous academic performance provides useful context.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- Prediction Results -->
+    {% if prediction is not none %}
+
+    <section class="results-section" id="results">
+
+        <div class="section-heading">
+
+            <span class="section-tag">YOUR RESULTS</span>
+
+            <h2>Performance Prediction</h2>
+
+            <p>
+                Here is your estimated academic performance.
+            </p>
+
+        </div>
+
+
+        <!-- Statistics Cards -->
+        <div class="stats-grid">
+
+            <div class="stat-card">
+
+                <span>Predicted Marks</span>
+
+                <h3>{{ prediction }}/100</h3>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <span>Study Hours</span>
+
+                <h3>{{ study_hours }}</h3>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <span>Attendance</span>
+
+                <h3>{{ attendance }}%</h3>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <span>Previous Marks</span>
+
+                <h3>{{ previous_marks }}/100</h3>
+
+            </div>
+
+        </div>
+
+
+        <!-- Performance Level -->
+        {% if prediction >= 80 %}
+
+            {% set performance_level = "Excellent" %}
+            {% set performance_message = "Your predicted performance is excellent. Keep maintaining your study routine!" %}
+
+        {% elif prediction >= 60 %}
+
+            {% set performance_level = "Good" %}
+            {% set performance_message = "Your predicted performance is good. Continue working consistently!" %}
+
+        {% elif prediction >= 40 %}
+
+            {% set performance_level = "Average" %}
+            {% set performance_message = "You have room to improve. Focus on regular study and attendance." %}
+
+        {% else %}
+
+            {% set performance_level = "Needs Improvement" %}
+            {% set performance_message = "Consider building a regular study routine and seeking academic support." %}
+
+        {% endif %}
+
+
+        <!-- Performance Card -->
+        <div class="performance-card">
+
+            <h3>
+                Performance Level: {{ performance_level }}
+            </h3>
+
+            <p>
+                {{ performance_message }}
+            </p>
+
+            <div class="progress-track">
+
+                <div
+                    class="progress-fill"
+                    id="performanceProgress">
+                </div>
+
+            </div>
+
+            <p class="progress-label">
+                {{ prediction }} out of 100
+            </p>
+
+        </div>
+
+
+        <!-- Performance Chart -->
+        <div class="chart-card">
+
+            <h3>Academic Performance Comparison</h3>
+
+            <div class="chart-container">
+
+                <canvas id="performanceChart"></canvas>
+
+            </div>
+
+        </div>
+
+
+        <!-- Disclaimer -->
+        <div class="disclaimer">
+
+            <strong>Note:</strong>
+
+            This is an estimated prediction generated by a machine learning
+            model. Actual examination marks may differ.
+
+        </div>
+
+    </section>
+
+    {% endif %}
+
+
+    <!-- Features Section -->
+    <section class="features-section" id="features">
+
+        <div class="section-heading">
+
+            <span class="section-tag">OUR FEATURES</span>
+
+            <h2>Designed to Support Your Growth</h2>
+
+            <p>
+                Understand your academic performance through useful insights.
+            </p>
+
+        </div>
+
+
+        <div class="features-grid">
+
+            <div class="feature-card">
+
+                <div class="feature-icon">🤖</div>
+
+                <h3>Smart Prediction</h3>
+
+                <p>
+                    Estimate final marks using a trained machine learning model.
+                </p>
+
+            </div>
+
+
+            <div class="feature-card">
+
+                <div class="feature-icon">📈</div>
+
+                <h3>Performance Analysis</h3>
+
+                <p>
+                    View your predicted marks and academic information together.
+                </p>
+
+            </div>
+
+
+            <div class="feature-card">
+
+                <div class="feature-icon">🎯</div>
+
+                <h3>Academic Awareness</h3>
+
+                <p>
+                    Understand how study habits and attendance relate to performance.
+                </p>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- Footer -->
+    <footer class="footer">
+
+        <div class="footer-content">
+
+            <h3>Student Performance Predictor</h3>
+
+            <p>
+                Helping students understand their academic performance.
+            </p>
+
+            <p class="copyright">
+                &copy; 2026 Student Performance Predictor. All rights reserved.
+            </p>
+
+        </div>
+
+    </footer>
+
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+    <!-- Prediction JavaScript -->
+    {% if prediction is not none %}
+
+    <script>
+
+        // Get prediction values from Flask
+        const previousMarks = Number("{{ previous_marks }}");
+        const predictedMarks = Number("{{ prediction }}");
+
+
+        // Update performance progress bar
+        const progressBar = document.getElementById("performanceProgress");
+
+        if (progressBar) {
+
+            progressBar.style.width = predictedMarks + "%";
+
+        }
+
+
+        // Create performance chart
+        const chartElement = document.getElementById("performanceChart");
+
+        if (chartElement && typeof Chart !== "undefined") {
+
+            new Chart(chartElement, {
+
+                type: "bar",
+
+                data: {
+
+                    labels: [
+                        "Previous Marks",
+                        "Predicted Marks"
+                    ],
+
+                    datasets: [{
+
+                        label: "Marks",
+
+                        data: [
+                            previousMarks,
+                            predictedMarks
+                        ],
+
+                        backgroundColor: [
+                            "#64748b",
+                            "#6366f1"
+                        ],
+
+                        borderRadius: 8,
+
+                        maxBarThickness: 75
+
+                    }]
+
+                },
+
+                options: {
+
+                    responsive: true,
+
+                    maintainAspectRatio: false,
+
+                    scales: {
+
+                        y: {
+
+                            beginAtZero: true,
+
+                            max: 100,
+
+                            title: {
+
+                                display: true,
+
+                                text: "Marks"
+
+                            }
+
+                        }
+
+                    },
+
+                    plugins: {
+
+                        legend: {
+
+                            display: false
+
+                        }
+
+                    }
+
+                }
+
+            });
+
+        }
+
+
+        // Automatically scroll to results
+        window.addEventListener("load", function () {
+
+            const results = document.getElementById("results");
+
+            if (results) {
+
+                results.scrollIntoView({
+
+                    behavior: "smooth",
+
+                    block: "start"
+
+                });
+
+            }
+
+        });
+
+    </script>
+
+    {% endif %}
+
+
+    <!-- Custom JavaScript -->
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+
+</body>
+</html>
